@@ -8,7 +8,7 @@ set (MINIUPNPC_API_VERSION 17)
 option (UPNPC_BUILD_STATIC "Build static library" TRUE)
 option (UPNPC_BUILD_SHARED "Build shared library" TRUE)
 option (UPNPC_BUILD_TESTS "Build test executables" TRUE)
-option (UPNPC_BUILD_SAMPLE "Build sample executables" TRUE)
+option (UPNPC_BUILD_SAMPLE "Build sample executables" FALSE)
 option (NO_GETADDRINFO "Define NO_GETADDRINFO" FALSE)
 option (UPNPC_NO_INSTALL "Disable installation" FALSE)
 
