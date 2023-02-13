@@ -393,7 +393,8 @@ static void
 parseMSEARCHReply(const char * reply, int size,
                   const char * * location, int * locationsize,
 			      const char * * st, int * stsize,
-			      const char * * usn, int * usnsize)
+			      const char * * usn, int * usnsize,
+				  const char * * server, int * serversize)
 {
 	int a, b, i;
 	i = 0;
@@ -440,6 +441,11 @@ parseMSEARCHReply(const char * reply, int size,
 						*usn = reply+b;
 						*usnsize = i-b;
 					}
+					else if (0==strncasecmp(reply + a, "server:", 7))
+                    {
+                        *server = reply + b;
+                        *serversize = i - b;
+                    }
 					b = 0;
 				}
 				a = i+1;
@@ -953,7 +959,9 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 					int stsize=0;
 					const char * usn=NULL;
 					int usnsize=0;
-					parseMSEARCHReply(bufr, n, &descURL, &urlsize, &st, &stsize, &usn, &usnsize);
+					const char * server = NULL;
+                    int serversize = 0;
+					parseMSEARCHReply(bufr, n, &descURL, &urlsize, &st, &stsize, &usn, &usnsize, &server, &serversize);
 					if(st&&descURL) {
 #ifdef DEBUG
 						printf("M-SEARCH Reply:\n  ST: %.*s\n  USN: %.*s\n  Location: %.*s\n",
@@ -965,14 +973,16 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 							   strncmp(tmp->st, st, stsize) == 0 &&
 							   tmp->st[stsize] == '\0' &&
 							   (usnsize == 0 || strncmp(tmp->usn, usn, usnsize) == 0) &&
-							   tmp->usn[usnsize] == '\0')
-								break;
+							    tmp->usn[usnsize] == '\0' &&
+                               (serversize == 0 || strncmp(tmp->server, server, serversize) == 0) &&
+                               tmp->server[serversize] == '\0')
+							    break;
 						}
 						/* at the exit of the loop above, tmp is null if
 						 * no duplicate device was found */
 						if(tmp)
 							continue;
-						tmp = (struct UPNPDev *)malloc(sizeof(struct UPNPDev)+urlsize+stsize+usnsize+3);
+						tmp = (struct UPNPDev *)malloc(sizeof(struct UPNPDev)+urlsize+stsize+usnsize+serversize+4);
 						if(!tmp) {
 							/* memory allocation error */
 							if(error)
@@ -983,6 +993,7 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 						tmp->descURL = tmp->buffer;
 						tmp->st = tmp->buffer + 1 + urlsize;
 						tmp->usn = tmp->st + 1 + stsize;
+						tmp->server = tmp->usn + 1 + usnsize;									 
 						memcpy(tmp->buffer, descURL, urlsize);
 						tmp->buffer[urlsize] = '\0';
 						memcpy(tmp->st, st, stsize);
@@ -990,6 +1001,9 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 						if(usn != NULL)
 							memcpy(tmp->usn, usn, usnsize);
 						tmp->buffer[urlsize+1+stsize+1+usnsize] = '\0';
+						if (server != NULL)
+                            memcpy(tmp->server, server, serversize);
+                        tmp->buffer[urlsize + 1 + stsize + 1 + usnsize + 1 + serversize] = '\0';
 						tmp->scope_id = scope_id;
 						devlist = tmp;
 					}

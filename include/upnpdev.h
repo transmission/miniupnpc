@@ -19,6 +19,7 @@ struct UPNPDev {
 	char * descURL;
 	char * st;
 	char * usn;
+    char *server;
 	unsigned int scope_id;
 #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
 	/* C99 flexible array member */
