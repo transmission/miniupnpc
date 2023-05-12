@@ -391,9 +391,9 @@ free_tmp_and_return:
  * The strings are NOT null terminated */
 static void
 parseMSEARCHReply(const char * reply, int size,
-                  const char * * location, int * locationsize,
-			      const char * * st, int * stsize,
-			      const char * * usn, int * usnsize,
+				  const char * * location, int * locationsize,
+				  const char * * st, int * stsize,
+				  const char * * usn, int * usnsize,
 				  const char * * server, int * serversize)
 {
 	int a, b, i;
@@ -442,10 +442,10 @@ parseMSEARCHReply(const char * reply, int size,
 						*usnsize = i-b;
 					}
 					else if (0==strncasecmp(reply + a, "server:", 7))
-                    {
-                        *server = reply + b;
-                        *serversize = i - b;
-                    }
+					{
+						*server = reply + b;
+						*serversize = i - b;
+					}
 					b = 0;
 				}
 				a = i+1;
@@ -522,11 +522,11 @@ static int upnp_gettimeofday(struct timeval * tv)
  *   SHOULD be configurable. */
 struct UPNPDev *
 ssdpDiscoverDevices(const char * const deviceTypes[],
-                    int delay, const char * multicastif,
-                    int localport,
-                    int ipv6, unsigned char ttl,
-                    int * error,
-                    int searchalltypes)
+					int delay, const char * multicastif,
+					int localport,
+					int ipv6, unsigned char ttl,
+					int * error,
+					int searchalltypes)
 {
 	struct UPNPDev * tmp;
 	struct UPNPDev * devlist = NULL;
@@ -820,7 +820,7 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 	/* Before sending the packed, we first "bind" in order to be able
 	 * to receive the response */
 	if (bind(sudp, (const struct sockaddr *)&sockudp_r,
-	         ipv6 ? sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in)) != 0)
+				ipv6 ? sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in)) != 0)
 	{
 		if(error)
 			*error = MINISSDPC_SOCKET_ERROR;
@@ -842,11 +842,11 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 		sentok = 0;
 		/* sending the SSDP M-SEARCH packet */
 		n = snprintf(bufr, sizeof(bufr),
-		             MSearchMsgFmt,
-		             ipv6 ?
-		             (linklocal ? "[" UPNP_MCAST_LL_ADDR "]" :  "[" UPNP_MCAST_SL_ADDR "]")
-		             : UPNP_MCAST_ADDR,
-		             deviceTypes[deviceIndex], mx);
+						MSearchMsgFmt,
+						ipv6 ?
+						(linklocal ? "[" UPNP_MCAST_LL_ADDR "]" :  "[" UPNP_MCAST_SL_ADDR "]")
+						: UPNP_MCAST_ADDR,
+						deviceTypes[deviceIndex], mx);
 		if ((unsigned int)n >= sizeof(bufr)) {
 			if(error)
 				*error = MINISSDPC_MEMORY_ERROR;
@@ -855,10 +855,10 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 #ifdef DEBUG
 		/*printf("Sending %s", bufr);*/
 		printf("Sending M-SEARCH request to %s with ST: %s\n",
-		       ipv6 ?
-		       (linklocal ? "[" UPNP_MCAST_LL_ADDR "]" :  "[" UPNP_MCAST_SL_ADDR "]")
-		       : UPNP_MCAST_ADDR,
-		       deviceTypes[deviceIndex]);
+				ipv6 ?
+				(linklocal ? "[" UPNP_MCAST_LL_ADDR "]" :  "[" UPNP_MCAST_SL_ADDR "]")
+				: UPNP_MCAST_ADDR,
+				deviceTypes[deviceIndex]);
 #endif
 #ifdef NO_GETADDRINFO
 		/* the following code is not using getaddrinfo */
@@ -869,8 +869,8 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 			p->sin6_family = AF_INET6;
 			p->sin6_port = htons(SSDP_PORT);
 			inet_pton(AF_INET6,
-			          linklocal ? UPNP_MCAST_LL_ADDR : UPNP_MCAST_SL_ADDR,
-			          &(p->sin6_addr));
+						linklocal ? UPNP_MCAST_LL_ADDR : UPNP_MCAST_SL_ADDR,
+						&(p->sin6_addr));
 		} else {
 			struct sockaddr_in * p = (struct sockaddr_in *)&sockudp_w;
 			p->sin_family = AF_INET;
@@ -878,7 +878,7 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 			p->sin_addr.s_addr = inet_addr(UPNP_MCAST_ADDR);
 		}
 		n = sendto(sudp, bufr, n, 0, &sockudp_w,
-		           ipv6 ? sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in));
+					ipv6 ? sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in));
 		if (n < 0) {
 			if(error)
 				*error = MINISSDPC_SOCKET_ERROR;
@@ -892,9 +892,9 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 		hints.ai_socktype = SOCK_DGRAM;
 		/*hints.ai_flags = */
 		if ((rv = getaddrinfo(ipv6
-		                      ? (linklocal ? UPNP_MCAST_LL_ADDR : UPNP_MCAST_SL_ADDR)
-		                      : UPNP_MCAST_ADDR,
-		                      XSTR(SSDP_PORT), &hints, &servinfo)) != 0) {
+								? (linklocal ? UPNP_MCAST_LL_ADDR : UPNP_MCAST_SL_ADDR)
+								: UPNP_MCAST_ADDR,
+								XSTR(SSDP_PORT), &hints, &servinfo)) != 0) {
 			if(error)
 				*error = MINISSDPC_SOCKET_ERROR;
 #ifdef _WIN32
@@ -911,7 +911,7 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 #ifdef DEBUG
 					char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
 					if (getnameinfo(p->ai_addr, (socklen_t)p->ai_addrlen, hbuf, sizeof(hbuf), sbuf,
-					                sizeof(sbuf), NI_NUMERICHOST | NI_NUMERICSERV) == 0) {
+						sizeof(sbuf), NI_NUMERICHOST | NI_NUMERICSERV) == 0) {
 						fprintf(stderr, "host:%s port:%s\n", hbuf, sbuf);
 					}
 #endif
@@ -960,23 +960,23 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 					const char * usn=NULL;
 					int usnsize=0;
 					const char * server = NULL;
-                    int serversize = 0;
+					int serversize = 0;
 					parseMSEARCHReply(bufr, n, &descURL, &urlsize, &st, &stsize, &usn, &usnsize, &server, &serversize);
 					if(st&&descURL) {
 #ifdef DEBUG
 						printf("M-SEARCH Reply:\n  ST: %.*s\n  USN: %.*s\n  Location: %.*s\n",
-						       stsize, st, usnsize, (usn?usn:""), urlsize, descURL);
+							stsize, st, usnsize, (usn?usn:""), urlsize, descURL);
 #endif /* DEBUG */
 						for(tmp=devlist; tmp; tmp = tmp->pNext) {
 							if(strncmp(tmp->descURL, descURL, urlsize) == 0 &&
-							   tmp->descURL[urlsize] == '\0' &&
-							   strncmp(tmp->st, st, stsize) == 0 &&
-							   tmp->st[stsize] == '\0' &&
-							   (usnsize == 0 || strncmp(tmp->usn, usn, usnsize) == 0) &&
-							    tmp->usn[usnsize] == '\0' &&
-                               (serversize == 0 || strncmp(tmp->server, server, serversize) == 0) &&
-                               tmp->server[serversize] == '\0')
-							    break;
+							tmp->descURL[urlsize] == '\0' &&
+							strncmp(tmp->st, st, stsize) == 0 &&
+							tmp->st[stsize] == '\0' &&
+							(usnsize == 0 || strncmp(tmp->usn, usn, usnsize) == 0) &&
+							tmp->usn[usnsize] == '\0' &&
+							(serversize == 0 || strncmp(tmp->server, server, serversize) == 0) &&
+							tmp->server[serversize] == '\0')
+							break;
 						}
 						/* at the exit of the loop above, tmp is null if
 						 * no duplicate device was found */
