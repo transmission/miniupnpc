@@ -391,7 +391,7 @@ free_tmp_and_return:
  * The strings are NOT null terminated */
 static void
 parseMSEARCHReply(const char * reply, int size,
-				  const char * * location, int * locationsize,
+                  const char * * location, int * locationsize,
 				  const char * * st, int * stsize,
 				  const char * * usn, int * usnsize,
 				  const char * * server, int * serversize)
@@ -522,7 +522,7 @@ static int upnp_gettimeofday(struct timeval * tv)
  *   SHOULD be configurable. */
 struct UPNPDev *
 ssdpDiscoverDevices(const char * const deviceTypes[],
-					int delay, const char * multicastif,
+                    int delay, const char * multicastif,
 					int localport,
 					int ipv6, unsigned char ttl,
 					int * error,
@@ -660,7 +660,7 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 					if (pMulticast) {
 						for (i = 0; pMulticast != NULL; i++) {
 							printf("\tMulticast Address[%d]:     \t%s\n", i, inet_ntoa(((PSOCKADDR_IN)pMulticast->Address.lpSockaddr)->sin_addr) );
-              pMulticast = pMulticast->Next;
+							pMulticast = pMulticast->Next;
 						}
 					}
 					printf("\n");
@@ -1002,8 +1002,8 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 							memcpy(tmp->usn, usn, usnsize);
 						tmp->buffer[urlsize+1+stsize+1+usnsize] = '\0';
 						if (server != NULL)
-                            memcpy(tmp->server, server, serversize);
-                        tmp->buffer[urlsize + 1 + stsize + 1 + usnsize + 1 + serversize] = '\0';
+							memcpy(tmp->server, server, serversize);
+							tmp->buffer[urlsize + 1 + stsize + 1 + usnsize + 1 + serversize] = '\0';
 						tmp->scope_id = scope_id;
 						devlist = tmp;
 					}
