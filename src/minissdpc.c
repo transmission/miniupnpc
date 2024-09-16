@@ -392,8 +392,9 @@ free_tmp_and_return:
 static void
 parseMSEARCHReply(const char * reply, int size,
                   const char * * location, int * locationsize,
-			      const char * * st, int * stsize,
-			      const char * * usn, int * usnsize)
+				  const char * * st, int * stsize,
+				  const char * * usn, int * usnsize,
+				  const char * * server, int * serversize)
 {
 	int a, b, i;
 	i = 0;
@@ -439,6 +440,11 @@ parseMSEARCHReply(const char * reply, int size,
 					{
 						*usn = reply+b;
 						*usnsize = i-b;
+					}
+					else if (0==strncasecmp(reply + a, "server:", 7))
+					{
+						*server = reply + b;
+						*serversize = i - b;
 					}
 					b = 0;
 				}
@@ -517,10 +523,10 @@ static int upnp_gettimeofday(struct timeval * tv)
 struct UPNPDev *
 ssdpDiscoverDevices(const char * const deviceTypes[],
                     int delay, const char * multicastif,
-                    int localport,
-                    int ipv6, unsigned char ttl,
-                    int * error,
-                    int searchalltypes)
+					int localport,
+					int ipv6, unsigned char ttl,
+					int * error,
+					int searchalltypes)
 {
 	struct UPNPDev * tmp;
 	struct UPNPDev * devlist = NULL;
@@ -654,7 +660,7 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 					if (pMulticast) {
 						for (i = 0; pMulticast != NULL; i++) {
 							printf("\tMulticast Address[%d]:     \t%s\n", i, inet_ntoa(((PSOCKADDR_IN)pMulticast->Address.lpSockaddr)->sin_addr) );
-              pMulticast = pMulticast->Next;
+							pMulticast = pMulticast->Next;
 						}
 					}
 					printf("\n");
@@ -814,7 +820,7 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 	/* Before sending the packed, we first "bind" in order to be able
 	 * to receive the response */
 	if (bind(sudp, (const struct sockaddr *)&sockudp_r,
-	         ipv6 ? sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in)) != 0)
+				ipv6 ? sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in)) != 0)
 	{
 		if(error)
 			*error = MINISSDPC_SOCKET_ERROR;
@@ -836,11 +842,11 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 		sentok = 0;
 		/* sending the SSDP M-SEARCH packet */
 		n = snprintf(bufr, sizeof(bufr),
-		             MSearchMsgFmt,
-		             ipv6 ?
-		             (linklocal ? "[" UPNP_MCAST_LL_ADDR "]" :  "[" UPNP_MCAST_SL_ADDR "]")
-		             : UPNP_MCAST_ADDR,
-		             deviceTypes[deviceIndex], mx);
+						MSearchMsgFmt,
+						ipv6 ?
+						(linklocal ? "[" UPNP_MCAST_LL_ADDR "]" :  "[" UPNP_MCAST_SL_ADDR "]")
+						: UPNP_MCAST_ADDR,
+						deviceTypes[deviceIndex], mx);
 		if ((unsigned int)n >= sizeof(bufr)) {
 			if(error)
 				*error = MINISSDPC_MEMORY_ERROR;
@@ -849,10 +855,10 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 #ifdef DEBUG
 		/*printf("Sending %s", bufr);*/
 		printf("Sending M-SEARCH request to %s with ST: %s\n",
-		       ipv6 ?
-		       (linklocal ? "[" UPNP_MCAST_LL_ADDR "]" :  "[" UPNP_MCAST_SL_ADDR "]")
-		       : UPNP_MCAST_ADDR,
-		       deviceTypes[deviceIndex]);
+				ipv6 ?
+				(linklocal ? "[" UPNP_MCAST_LL_ADDR "]" :  "[" UPNP_MCAST_SL_ADDR "]")
+				: UPNP_MCAST_ADDR,
+				deviceTypes[deviceIndex]);
 #endif
 #ifdef NO_GETADDRINFO
 		/* the following code is not using getaddrinfo */
@@ -863,8 +869,8 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 			p->sin6_family = AF_INET6;
 			p->sin6_port = htons(SSDP_PORT);
 			inet_pton(AF_INET6,
-			          linklocal ? UPNP_MCAST_LL_ADDR : UPNP_MCAST_SL_ADDR,
-			          &(p->sin6_addr));
+						linklocal ? UPNP_MCAST_LL_ADDR : UPNP_MCAST_SL_ADDR,
+						&(p->sin6_addr));
 		} else {
 			struct sockaddr_in * p = (struct sockaddr_in *)&sockudp_w;
 			p->sin_family = AF_INET;
@@ -872,7 +878,7 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 			p->sin_addr.s_addr = inet_addr(UPNP_MCAST_ADDR);
 		}
 		n = sendto(sudp, bufr, n, 0, &sockudp_w,
-		           ipv6 ? sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in));
+					ipv6 ? sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in));
 		if (n < 0) {
 			if(error)
 				*error = MINISSDPC_SOCKET_ERROR;
@@ -886,9 +892,9 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 		hints.ai_socktype = SOCK_DGRAM;
 		/*hints.ai_flags = */
 		if ((rv = getaddrinfo(ipv6
-		                      ? (linklocal ? UPNP_MCAST_LL_ADDR : UPNP_MCAST_SL_ADDR)
-		                      : UPNP_MCAST_ADDR,
-		                      XSTR(SSDP_PORT), &hints, &servinfo)) != 0) {
+								? (linklocal ? UPNP_MCAST_LL_ADDR : UPNP_MCAST_SL_ADDR)
+								: UPNP_MCAST_ADDR,
+								XSTR(SSDP_PORT), &hints, &servinfo)) != 0) {
 			if(error)
 				*error = MINISSDPC_SOCKET_ERROR;
 #ifdef _WIN32
@@ -905,7 +911,7 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 #ifdef DEBUG
 					char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
 					if (getnameinfo(p->ai_addr, (socklen_t)p->ai_addrlen, hbuf, sizeof(hbuf), sbuf,
-					                sizeof(sbuf), NI_NUMERICHOST | NI_NUMERICSERV) == 0) {
+						sizeof(sbuf), NI_NUMERICHOST | NI_NUMERICSERV) == 0) {
 						fprintf(stderr, "host:%s port:%s\n", hbuf, sbuf);
 					}
 #endif
@@ -953,26 +959,30 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 					int stsize=0;
 					const char * usn=NULL;
 					int usnsize=0;
-					parseMSEARCHReply(bufr, n, &descURL, &urlsize, &st, &stsize, &usn, &usnsize);
+					const char * server = NULL;
+					int serversize = 0;
+					parseMSEARCHReply(bufr, n, &descURL, &urlsize, &st, &stsize, &usn, &usnsize, &server, &serversize);
 					if(st&&descURL) {
 #ifdef DEBUG
 						printf("M-SEARCH Reply:\n  ST: %.*s\n  USN: %.*s\n  Location: %.*s\n",
-						       stsize, st, usnsize, (usn?usn:""), urlsize, descURL);
+							stsize, st, usnsize, (usn?usn:""), urlsize, descURL);
 #endif /* DEBUG */
 						for(tmp=devlist; tmp; tmp = tmp->pNext) {
 							if(strncmp(tmp->descURL, descURL, urlsize) == 0 &&
-							   tmp->descURL[urlsize] == '\0' &&
-							   strncmp(tmp->st, st, stsize) == 0 &&
-							   tmp->st[stsize] == '\0' &&
-							   (usnsize == 0 || strncmp(tmp->usn, usn, usnsize) == 0) &&
-							   tmp->usn[usnsize] == '\0')
-								break;
+							tmp->descURL[urlsize] == '\0' &&
+							strncmp(tmp->st, st, stsize) == 0 &&
+							tmp->st[stsize] == '\0' &&
+							(usnsize == 0 || strncmp(tmp->usn, usn, usnsize) == 0) &&
+							tmp->usn[usnsize] == '\0' &&
+							(serversize == 0 || strncmp(tmp->server, server, serversize) == 0) &&
+							tmp->server[serversize] == '\0')
+							break;
 						}
 						/* at the exit of the loop above, tmp is null if
 						 * no duplicate device was found */
 						if(tmp)
 							continue;
-						tmp = (struct UPNPDev *)malloc(sizeof(struct UPNPDev)+urlsize+stsize+usnsize+3);
+						tmp = (struct UPNPDev *)malloc(sizeof(struct UPNPDev)+urlsize+stsize+usnsize+serversize+4);
 						if(!tmp) {
 							/* memory allocation error */
 							if(error)
@@ -983,6 +993,7 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 						tmp->descURL = tmp->buffer;
 						tmp->st = tmp->buffer + 1 + urlsize;
 						tmp->usn = tmp->st + 1 + stsize;
+						tmp->server = tmp->usn + 1 + usnsize;									 
 						memcpy(tmp->buffer, descURL, urlsize);
 						tmp->buffer[urlsize] = '\0';
 						memcpy(tmp->st, st, stsize);
@@ -990,6 +1001,9 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 						if(usn != NULL)
 							memcpy(tmp->usn, usn, usnsize);
 						tmp->buffer[urlsize+1+stsize+1+usnsize] = '\0';
+						if (server != NULL)
+							memcpy(tmp->server, server, serversize);
+							tmp->buffer[urlsize + 1 + stsize + 1 + usnsize + 1 + serversize] = '\0';
 						tmp->scope_id = scope_id;
 						devlist = tmp;
 					}
